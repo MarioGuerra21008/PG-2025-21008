@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": ["node", "jest", "react"],
+    "noEmit": true
+  },
+  "include": ["**/__tests__/**/*.ts", "**/__tests__/**/*.tsx"]
+}

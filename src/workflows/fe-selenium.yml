@@ -1,0 +1,57 @@
+name: Selenium Local Tests Frontend
+
+on:
+  pull_request:
+    branches: [ "main", "dev" ]
+  push:
+    branches: [ "dev" ]
+
+jobs:
+  selenium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Install deps
+        run: yarn install
+
+      - name: Build application
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: yarn build
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+        with:
+          chrome-version: stable
+
+      - name: Setup ChromeDriver
+        uses: nanasess/setup-chromedriver@master
+
+      - name: Check Chrome and ChromeDriver
+        run: |
+          google-chrome --version
+          chromedriver --version
+
+      - name: Start preview server & Run tests
+        env:
+          BASE_URL: http://localhost:5173
+          CI: true
+        run: |
+          yarn preview --port 5173 &
+          sleep 10
+          yarn test:selenium
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-screenshots
+          path: selenium_tests/selenium-error.png
+          if-no-files-found: ignore

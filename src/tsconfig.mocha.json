@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "types": ["node", "mocha", "chai", "jsdom"],
+    "noEmit": true
+  },
+  "include": ["mocha_tests/mocha/**/*.{ts,tsx}"]
+}

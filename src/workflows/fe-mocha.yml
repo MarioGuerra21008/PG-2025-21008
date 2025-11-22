@@ -1,0 +1,29 @@
+name: Mocha Tests Frontend
+
+on:
+  pull_request:
+    branches: [ "main", "dev" ]
+  push:
+    branches: [ "dev" ]
+
+jobs:
+  mocha:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Install deps
+        run: yarn install
+
+      - name: Run Mocha
+        env:
+          CI: true
+          NODE_ENV: test
+          VITE_API_BASE_URL: http://localhost:5173
+        run: yarn test:mocha

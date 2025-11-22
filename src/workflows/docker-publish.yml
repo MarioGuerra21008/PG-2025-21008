@@ -1,0 +1,111 @@
+name: Docker Container Frontend
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+    paths:
+      - "Dockerfile"
+      - "nginx.conf"
+      - "package.json"
+      - "yarn.lock"
+      - "src/**"
+      - "public/**"
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    env:
+      IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/santa-ana-agroforms
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (multi-arch)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Log in to Docker Hub (para pushear también a tu cuenta)
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: mariogm45
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Genera tags y labels automáticamente
+      - name: Docker meta (GHCR)
+        id: meta-ghcr
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
+            type=raw,value=dev-{{sha}},enable=${{ github.ref == 'refs/heads/dev' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=semver,pattern={{version}},enable=${{ github.ref == 'refs/heads/main' }}
+          labels: |
+            org.opencontainers.image.title=Santa Ana Agroforms (Frontend)
+            org.opencontainers.image.description=Vite+React static site served by Nginx with CSP headers
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      # Tags para Docker Hub
+      - name: Docker meta (Docker Hub)
+        id: meta-dockerhub
+        uses: docker/metadata-action@v5
+        with:
+          images: mariogm45/santa-ana-frontend
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=sha-
+            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      # Build y Push con variables de entorno
+      - name: Build and Push (multi-arch)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          # Push a ambos registros
+          tags: |
+            ${{ steps.meta-ghcr.outputs.tags }}
+            ${{ steps.meta-dockerhub.outputs.tags }}
+          labels: ${{ steps.meta-ghcr.outputs.labels }}
+          # Variables de entorno desde GitHub Secrets
+          build-args: |
+            VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
+            VITE_API_MOBILE_URL=${{ secrets.VITE_API_MOBILE_URL }}
+            VITE_API_MOBILE_KEY=${{ secrets.VITE_API_MOBILE_KEY }}
+          # Caché BuildKit
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Resumen del build
+      - name: Build Summary
+        run: |
+          echo "### ✅ Build Completado" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Imágenes creadas:**" >> $GITHUB_STEP_SUMMARY
+          echo "- GHCR: \`${{ env.IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Docker Hub: \`mariogm45/santa-ana-frontend:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY

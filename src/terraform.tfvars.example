@@ -1,0 +1,17 @@
+project_id  = "ID-del-Proyecto"
+region      = "Region-GCR"
+environment = "Nombre-del-Ambiente"
+
+frontend_image = "Nombre-Imagen-Docker"
+
+frontend_cpu    = "Cantidad-de-Recursos"
+frontend_memory = "Cantidad-de-Memoria"
+
+frontend_min_instances = "Numero-De-Instancias-Minimas"
+frontend_max_instances = "Numero-De-Instancias-Maximas"
+
+ingress_setting = "Settings-de-Ingreso"
+
+rate_limit_threshold = numero_de_rate_limiting
+
+blocked_ip_ranges = ["IP-Bloqueada(s)"]

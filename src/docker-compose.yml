@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
+    
+    image: agroforms-frontend:latest
+    container_name: agroforms-frontend
+    
+    ports:
+      - "8080:80"
+    
+    environment:
+      - NODE_ENV=production
+      - TZ=America/Guatemala
+    
+    restart: unless-stopped
+    
+    # Límites de recursos
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    
+    # Networks
+    networks:
+      - agroforms-network
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+    # Labels para organización
+    labels:
+      - "com.agroforms.service=frontend"
+      - "com.agroforms.environment=production"
+      - "com.agroforms.version=1.0.0"
+
+  # Servicio de Monitoreo
+  # watchtower:
+  #   image: containrrr/watchtower
+  #   container_name: watchtower
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   command: --interval 300 --cleanup
+  #   restart: unless-stopped
+  #   networks:
+  #     - agroforms-network
+
+# Networks
+networks:
+  agroforms-network:
+    driver: bridge
+    name: agroforms-network

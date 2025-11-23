@@ -14,6 +14,8 @@ Este proyecto implementa un módulo integral de ciberseguridad y aseguramiento d
 
 El proyecto resuelve la necesidad de garantizar la calidad, seguridad y confiabilidad del software mediante la integración de prácticas modernas de desarrollo seguro y pruebas automatizadas.
 
+En este repositorio, se cuenta con todos los archivos creados para este proyecto. Contando con las pruebas automatizadas en frontend y backend, como también con los archivos de despliegue y contenerización, flujos de trabajo y de infraestructura como código. Los repositorios en los cuales se pueden mover y ejecutar las pruebas y los flujos de trabajo se encuentran más adelante en este README.
+
 ---
 
 ## Tecnologías Utilizadas
@@ -73,6 +75,11 @@ El proyecto resuelve la necesidad de garantizar la calidad, seguridad y confiabi
 ## Instalación
 
 ### 1. Clonar los Repositorios
+
+```bash
+git clone https://github.com/MarioGuerra21008/PG-2025-21008
+cd PG-2025-21008
+```
 
 #### Frontend
 ```bash
